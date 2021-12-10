@@ -16,21 +16,34 @@ from bs4 import BeautifulSoup as bs
 from urllib.request import urlopen
 from urllib.parse import quote_plus
 import urllib.request
-from urllib.request import urlretrieve
+from urllib.request import urlretrieve 
+import time
 
-def html_search():
+def url_html_search():
+    plusUrl = input('검색어 입력: ')
+    baseUrl = "https://www.google.com/search?q={}".format(plusUrl)
+    url = baseUrl + quote_plus(plusUrl)
+    headers = {'User-Agent':'Chrome/96.0.4664.45'}
+    req = urllib.request.Request(url, headers=headers)
+    #html = requests.get('링크')
+    html = urllib.request.urlopen(req)
+    time.sleep(1)
+    soup = bs(html, "html.parser")
+    return soup
+
+def img_html_search():
     plusUrl = input('검색어 입력: ')
     baseUrl = "https://www.google.com/search?q={}&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjgwPKzqtXuAhWW62EKHRjtBvcQ_AUoAXoECBEQAw&biw=768&bih=712".format(plusUrl)
-    crawl_num = int(input('크롤링할 갯수 입력: '))
+    #crawl_num = int(input('크롤링할 갯수 입력: '))
     #url = baseUrl + quote_plus(plusUrl) # 한글 검색 자동 변환
     headers = {'User-Agent':'Chrome/96.0.4664.45'}
     req = urllib.request.Request(baseUrl, headers=headers)
     html = urllib.request.urlopen(req)
     soup = bs(html, "html.parser")
-    return soup, crawl_num
+    return soup
 
 def img_crawling():
-    soup, crawl_num = html_search()
+    soup = img_html_search()
     #img = soup.find_all('img')
     img_url = []
     for img in soup.find_all("img"):
@@ -39,32 +52,23 @@ def img_crawling():
     
     #이후 안됨
     img_url.pop(0)
-    
-    for imgurl in img_url:
-        n = 1
+    n = 1    
+"""    for imgurl in img_url:
+
         savename = str(n) + ".jpg"
-        urlretrieve(imgurl, savename)
-        n += 1
-        if n == crawl_num:
-            break
-    
-"""    
-    n = 1
-    for i in img:
-        print(n)
-        imgUrl = i['data-source']
-        with urlopen(imgUrl) as f:
-            with open('./img/' + str(n)+'.jpg','wb') as h: # w - write b - binary
-                img = f.read()
-                h.write(img)
-        n += 1
-        if n > crawl_num:
-            print('Image Crawling is done.')
-            break
-"""
-   
-def img_save():
-    pass
+        urlretrieve(imgurl, "./img/"+savename)
+        n += 1"""
+
+def url_crawling():
+    url = []
+    soup = url_html_search()
+    #img = soup.find_all('img')
+    url_list = []
+    for i in soup.find_all('a'):
+        for j in i.find_all('href'):
+            url_list.append(j)
+    print(url_list)
 
 if __name__=="__main__":
-    img_crawling()
+    #img_crawling()
+    url_crawling()
