@@ -4,113 +4,25 @@ import multiprocessing
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 from urllib.parse import quote_plus
-from urllib.request import urlretrieve 
+from urllib.request import urlretrieve, urlparse
 import time
 import requests
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 
-#, chrome_options=options)
+search = input('검색어를 입력하세요: ')
+num = int(input ('다운로드 받고 싶은 이미지의 갯수를 입력하세요: '))
 
-def html_get():
-    search = input ('검색어를 입력하세요: ')
-
-    num = int(input ('다운로드 받고 싶은 이미지의 갯수를 입력하세요: '))
-
+def img_crawling(url):
+    cp = multiprocessing.current_process()
     options = webdriver.ChromeOptions()
-
     options.add_argument('--ignore-certificate-errors')
-
     options.add_argument('--ignore-ssl-errors')
-
     driver = webdriver.Chrome("C:/Users/chltp/Documents/GitHub/studycode/homework/chromedriver.exe", chrome_options=options)
-
-    driver.get("https://www.google.co.kr/imghp?hl=ko&tab=wi&ogbl")
-
+    driver.get(url)
     elem = driver.find_element_by_name("q") 
-
     elem.send_keys(str(search))
-
-    elem.send_keys(Keys.RETURN) 
-
-    if num>=50:
-
-        SCROLL_PAUSE_TIME = 1.5
-
-        # Get scroll height
-
-        last_height = driver.execute_script("return document.body.scrollHeight")
-
-        while True:
-
-            # Scroll down to bottom
-
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
-            # Wait to load page
-
-            time.sleep(SCROLL_PAUSE_TIME)
-
-            # Calculate new scroll height and compare with last scroll height
-
-            new_height = driver.execute_script("return document.body.scrollHeight")
-
-            if new_height == last_height:
-
-                try:
-
-                    driver.find_element_by_css_selector(".mye4qd").click()
-
-                except:
-
-                    break
-
-            last_height = new_height
-
-    count = 1
-
-    images = driver.find_elements_by_css_selector(".rg_i.Q4LuWd")
-
-    for image in images:
-
-        try:
-
-            image.click()  
-
-            time.sleep(1)
-
-            imgURL=driver.find_element_by_xpath("/html/body/div[2]/c-wiz/div[3]/div[2]/div[3]/div/div/div[3]/div[2]/c-wiz/div[1]/div[1]/div/div[2]/a/img").get_attribute("src")
-
-            urlretrieve(imgURL , str(search) + str(count) + ".jpg")
-
-            count = count + 1
-
-        except:
-
-            pass
-
-        if count == int(num)+1:
-
-            break
-    driver.close()
-    """
-    options = webdriver.ChromeOptions()
-    options.add_argument('--ignore-certificate-errors')
-    options.add_argument('--ignore-ssl-errors')
-    driver = webdriver.Chrome("C:/Users/chltp/Documents/GitHub/studycode/homework/chromedriver.exe", chrome_options=options)
-    driver.get("https://www.google.co.kr/imghp?hl=ko&tab=wi&ogbl")
-    elem = driver.find_element_by_name("q") 
-    elem.send_keys(str(word))
     elem.send_keys(Keys.RETURN)
-
-        headers = {'Content-Type': 'application/json; charset = utf-8'} 
-    cookies = {'id': 'WJEJGJ9231M1RR2OP'}
-    html = requests.get(url, headers=headers, cookies=cookies)
-    # 웹 페이지 로딩 시간
-    time.sleep(1)
-    soup = BeautifulSoup(html.content, "lxml")
-    print(soup)
-    return soup
     if num>=50:
         SCROLL_PAUSE_TIME = 1.5
         last_height = driver.execute_script("return document.body.scrollHeight")
@@ -124,69 +36,70 @@ def html_get():
                 except:
                     break
             last_height = new_height
-    
     images = driver.find_elements_by_css_selector(".rg_i.Q4LuWd")
 
-    #cp = multiprocessing.current_process()
     count = 1
     for image in images:
         try:
             image.click()  
             time.sleep(1)
             imgURL=driver.find_element_by_xpath("/html/body/div[2]/c-wiz/div[3]/div[2]/div[3]/div/div/div[3]/div[2]/c-wiz/div[1]/div[1]/div/div[2]/a/img").get_attribute("src")
-            urlretrieve(imgURL , "./img/" + str(word) + str(count) + ".jpg")
+            urlretrieve(imgURL , str(search) + str(count) + ".jpg")
             count = count + 1
         except:
             pass
-        if count == int(word)+1:
+        if count == int(num)+1:
             break
 
-    
-    for num in range(10):
-            images = driver.find_elements_by_xpath(f'//*[@id="islrg"]/div[1]/div[{num}]/a[1]/div[1]')
-            for image in images:
-                image.click()
-                time.sleep(2)
-                url_img = driver.find_element_by_xpath(f'//*[@id="islrg"]/div[1]/'
-                                                       f'div[{num}]/a[1]/div[1]/img').get_attribute('src')
-                img_url.append(url_img)
-    
-    for img in soup.find_all("img"):
-        img_url.append(img.get("src"))
-    print(img_url)
-    # 첫번째 필요없는 url 삭제 
-    # img_url.pop(0)
-    n = 1    
-    for imgurl in img_url:
-        savename = str(n) + ".jpg"
-        urlretrieve(imgurl, "./img/"+savename)
-        time.sleep(1)
-        n += 1
-    """
-def url_html_search(plusUrl):
-    #cp = multiprocessing.current_process()
-    baseUrl = "https://www.google.com/"
-    #elem = driver.find_element_by_name("q")
-   #elem.send_keys("치킨")
-    #elem.send_keys(Keys.RETURN)
+    driver.close()
 
-def url_crawling():
-    url = []
-    soup = url_html_search()
-    #img = soup.find_all('img')
-    url_list = []
-    for i in soup.find_all('a'):
-        for j in i.find('href'):
-            url_list.append(j)
+def url_addition(url_noting, url_):
+    def url_feature():
+        return f"{urlparse(url_).scheme}://{urlparse(url_).netloc}/"
+
+    fu = url_feature()+url_noting if url_noting.startswith('/') else url_noting
+
+    return fu
+
+def url_crawling(url):
+    cp = multiprocessing.current_process()
+    url = url + search
+    req = requests.get(url, verify=False)
+    soup = BeautifulSoup(req.content, 'lxml')
+    URL_TEXT_DATA = []
+    URL_HREF_DATA = []
+
+    for div_data in soup.find_all("a"):
+        time.sleep(2)
+        href_data = div_data['href']
+
+        # 필요없는 # 이나 도중에 짤린 URL 붙히기
+        if href_data == "#":
+            continue
+        if href_data.startswith('/'):
+            print(url_addition(href_data))
+            URL_HREF_DATA.append(url_addition(href_data, url))
+            URL_TEXT_DATA.append(div_data.text)
+
+    print(URL_HREF_DATA)
+"""    for i in soup.find_all('a'):
+        time.sleep(3)
+        url_list.append(i['href'])
+
     print(url_list)
-
-if __name__=="__main__":
-    html_get()
-"""    p1 = multiprocessing.Process(target=url_crawling, args=())
-    p2 = multiprocessing.Process(target=img_crawling, args=())
+"""
+def multi_processing():
+    url_ = ["https://www.google.co.kr/imghp?hl=ko", "https://www.google.com/search?q="]
+    p1 = multiprocessing.Process(target=img_crawling, args=(url_[0], ))
+    p2 = multiprocessing.Process(target=url_crawling, args=(url_[1], ))
 
     p1.start()
     p2.start()
 
     p1.join()
-    p2.join()"""
+    p2.join()
+
+if __name__=="__main__":
+    #img_crawling("https://www.google.co.kr/imghp?hl=ko&tab=wi&ogbl")
+    url_crawling("https://www.google.com/search?q=")
+    #multi_processing()
